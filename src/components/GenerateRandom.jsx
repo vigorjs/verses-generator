@@ -27,24 +27,30 @@ const GenerateRandom = () => {
                 setVerses(data[0] || null);
             }
         } catch (e) {
-            console.log("error fetching local verses:", e.message);
-            await fetchAndStoreVerses();
+            console.log("Error fetching local verses:", e.message);
+            await fetchAndStoreVerses(true);
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchAndStoreVerses = async () => {
+    const fetchAndStoreVerses = async (useExternalOnly = false) => {
         try {
             const res = await axios.get(`https://quran.vigorjs.me/surah/${indexSurah}`);
             const verseData = res.data.data;
             verseData.id = `${verseData.number}`;
 
-            await axios.post("http://localhost:3000/verse", verseData);
+            if (!useExternalOnly) {
+                try {
+                    await axios.post("http://localhost:3000/verse", verseData);
+                } catch (e) {
+                    console.log("Error storing verses locally:", e.message);
+                }
+            }
             
             setVerses(verseData);
         } catch (e) {
-            console.log("error fetching and storing verses:", e.message);
+            console.log("Error fetching and storing verses:", e.message);
         }
     };
 
